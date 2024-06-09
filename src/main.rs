@@ -6,11 +6,7 @@ fn main() -> Result<(), eframe::Error> {
         viewport: egui::ViewportBuilder::default().with_inner_size([1280.0, 720.0]),
         ..Default::default()
     };
-    eframe::run_native(
-        "My egui App with a plot",
-        options,
-        Box::new(|_cc| Box::<MyApp>::default()),
-    )
+    eframe::run_native("SciGui", options, Box::new(|_cc| Box::<MyApp>::default()))
 }
 #[derive(Default)]
 struct MyApp {}
@@ -21,6 +17,21 @@ impl eframe::App for MyApp {
         egui::CentralPanel::default().show(ctx, |ui| {
             if ui.button("Save Plot").clicked() {
                 ctx.send_viewport_cmd(egui::ViewportCommand::Screenshot);
+            }
+
+            if ui.button("Load Data").clicked() {
+                println!("Pressed Load");
+                let file = rfd::FileDialog::new()
+                    .add_filter("text-file", &["txt"])
+                    .add_filter("CSV-file", &["csv", "CSV"])
+                    .set_directory(".")
+                    .pick_file();
+
+                // TODO: load file
+                match file {
+                    Some(file) => println!("Picked file {file:?}"),
+                    None => eprintln!("Could not load File!"),
+                }
             }
 
             let my_plot = Plot::new("My Plot").legend(Legend::default());
