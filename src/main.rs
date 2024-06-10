@@ -27,9 +27,19 @@ impl eframe::App for MyApp {
                     .set_directory(".")
                     .pick_file();
 
-                // TODO: load file
+                use std::fs::File;
+                use std::io::prelude::*;
                 match file {
-                    Some(file) => println!("Picked file {file:?}"),
+                    Some(file) => {
+                        println!("Picked file {file:?}");
+                        // TODO: Error handling
+                        let mut file = File::open(file).unwrap();
+                        let mut contents = String::new();
+                        file.read_to_string(&mut contents);
+
+                        println!("with contents {contents}");
+                        // TODO: process to x,y array
+                    }
                     None => eprintln!("Could not load File!"),
                 }
             }
