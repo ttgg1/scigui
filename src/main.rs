@@ -9,7 +9,26 @@ fn main() -> Result<(), eframe::Error> {
     eframe::run_native("SciGui", options, Box::new(|_cc| Box::<MyApp>::default()))
 }
 #[derive(Default)]
-struct MyApp {}
+struct MyApp {
+    plot_data: Vec<[f64; 2]>,
+}
+
+use std::error::Error;
+use std::fs;
+use std::path::PathBuf;
+fn load_file_to_array(delimiter: &str, file: &PathBuf) -> Result<Vec<[f64; 2]>, Box<dyn Error>> {
+    let contents = fs::read_to_string(file)?;
+    let mut result: Vec<[f64; 2]> = Vec::new();
+
+    for s in contents.lines() {
+        if let Some((x, y)) = s.split_once(delimiter) {
+            result.push([x.parse()?, y.parse()?]);
+        } else {
+            eprintln!("Could not split Data {s}. Wrong format or delimieter ?");
+        }
+    }
+    Ok(result)
+}
 
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
@@ -20,36 +39,24 @@ impl eframe::App for MyApp {
             }
 
             if ui.button("Load Data").clicked() {
-                println!("Pressed Load");
+                // TODO: spawn new dialog, when data failed to load
                 let file = rfd::FileDialog::new()
                     .add_filter("text-file", &["txt"])
                     .add_filter("CSV-file", &["csv", "CSV"])
                     .set_directory(".")
-                    .pick_file();
-
-                use std::fs::File;
-                use std::io::prelude::*;
-                match file {
-                    Some(file) => {
-                        println!("Picked file {file:?}");
-                        // TODO: Error handling
-                        let mut file = File::open(file).unwrap();
-                        let mut contents = String::new();
-                        file.read_to_string(&mut contents);
-
-                        println!("with contents {contents}");
-                        // TODO: process to x,y array
-                    }
-                    None => eprintln!("Could not load File!"),
-                }
+                    .pick_file()
+                    .expect("Could not load File !");
+                // TODO: input form for delimiter
+                self.plot_data =
+                    load_file_to_array(", ", &file).expect("Failed to Load File into Vector");
             }
 
             let my_plot = Plot::new("My Plot").legend(Legend::default());
 
             // let's create a dummy line in the plot
-            let graph: Vec<[f64; 2]> = vec![[0.0, 1.0], [2.0, 3.0], [3.0, 2.0]];
+            //let graph: Vec<[f64; 2]> = vec![[0.0, 1.0], [2.0, 3.0], [3.0, 2.0]];
             let inner = my_plot.show(ui, |plot_ui| {
-                plot_ui.line(Line::new(PlotPoints::from(graph)).name("curve"));
+                plot_ui.line(Line::new(PlotPoints::from(self.plot_data.clone())).name("Curve"));
             });
             // Remember the position of the plot
             plot_rect = Some(inner.response.rect);
