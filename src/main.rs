@@ -22,7 +22,7 @@ fn load_file_to_array(delimiter: &str, file: &PathBuf) -> Result<Vec<[f64; 2]>, 
 
     for s in contents.lines() {
         if let Some((x, y)) = s.split_once(delimiter) {
-            result.push([x.parse()?, y.parse()?]);
+            result.push([x.trim().parse()?, y.trim().parse()?]);
         } else {
             eprintln!("Could not split Data {s}. Wrong format or delimieter ?");
         }
@@ -48,7 +48,7 @@ impl eframe::App for MyApp {
                     .expect("Could not load File !");
                 // TODO: input form for delimiter
                 self.plot_data =
-                    load_file_to_array(", ", &file).expect("Failed to Load File into Vector");
+                    load_file_to_array(",", &file).expect("Failed to Load File into Vector");
             }
 
             let my_plot = Plot::new("My Plot").legend(Legend::default());
