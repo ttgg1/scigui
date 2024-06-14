@@ -1,5 +1,5 @@
 use eframe::egui::*;
-use egui_plot::{Legend, Line, Plot, PlotPoints};
+use egui_plot::{Legend, Line, Plot, PlotPoint, PlotPoints};
 use std::sync::Arc;
 
 fn main() -> eframe::Result<()> {
@@ -10,11 +10,13 @@ fn main() -> eframe::Result<()> {
     eframe::run_native("SciGui", options, Box::new(|cc| Box::new(MyApp::new(cc))))
 }
 
-#[derive(Default)]
+//#[derive(Default)]
 struct MyApp {
     plot_data: Vec<[f64; 2]>,
     delimiter: String,
     did_load_succeed: bool,
+    plot_point_left: PlotPoint,
+    plot_point_right: PlotPoint,
 }
 
 use std::error::Error;
@@ -49,6 +51,8 @@ impl MyApp {
             plot_data: DEFAULT_DATA.to_vec(),
             delimiter: ",".to_string(),
             did_load_succeed: false,
+            plot_point_left: PlotPoint::new(0.0, 0.0),
+            plot_point_right: PlotPoint::new(4.0, 0.0),
         }
     }
     fn display_side_panel(&mut self, ctx: &egui::Context, ui: &mut Ui) {
@@ -100,18 +104,41 @@ impl MyApp {
                 ui.text_edit_singleline(&mut self.delimiter)
                     .labelled_by(delimiter_label.id);
             });
+
+        // X,Y pos DragValues
+        ui.label(format!(
+            "X Bounds: {:.2}, {:.2}",
+            self.plot_point_left.x, self.plot_point_right.x
+        ));
+        ui.label(format!(
+            "Y Bounds: {:.2}, {:.2}",
+            self.plot_point_left.y, self.plot_point_right.y
+        ));
+
+        // save Plot button
         if ui.button("Save Plot").clicked() {
             ctx.send_viewport_cmd(egui::ViewportCommand::Screenshot);
         }
     }
     // Return position of the plot
-    fn display_center_panel(&mut self, ctx: &egui::Context, ui: &mut Ui) -> Option<Rect> {
+    fn display_center_panel(&mut self, _ctx: &egui::Context, ui: &mut Ui) -> Option<Rect> {
         let my_plot = Plot::new("My Plot").legend(Legend::default());
 
         // let's create a dummy line in the plot
         let inner = my_plot.show(ui, |plot_ui| {
             plot_ui.line(Line::new(PlotPoints::from(self.plot_data.clone())).name("Curve"));
         });
+
+        let plot_left_bounds = inner
+            .transform
+            .value_from_position(inner.response.rect.left_bottom());
+        let plot_right_bounds = inner
+            .transform
+            .value_from_position(inner.response.rect.right_top());
+
+        self.plot_point_left = plot_left_bounds;
+        self.plot_point_right = plot_right_bounds;
+
         // Remember the position of the plot
         Some(inner.response.rect)
     }
