@@ -10,13 +10,22 @@ fn main() -> eframe::Result<()> {
     eframe::run_native("SciGui", options, Box::new(|cc| Box::new(MyApp::new(cc))))
 }
 
+#[derive(Debug, PartialEq)]
+enum ModuleEnum {
+    First,
+    Second,
+    Third,
+}
 //#[derive(Default)]
 struct MyApp {
     plot_data: Vec<[f64; 2]>,
     delimiter: String,
     did_load_succeed: bool,
+
     plot_point_left: PlotPoint,
     plot_point_right: PlotPoint,
+
+    selected_module: ModuleEnum,
 }
 
 use std::error::Error;
@@ -53,22 +62,19 @@ impl MyApp {
             did_load_succeed: false,
             plot_point_left: PlotPoint::new(0.0, 0.0),
             plot_point_right: PlotPoint::new(4.0, 0.0),
+            selected_module: ModuleEnum::First,
         }
     }
     fn display_side_panel(&mut self, ctx: &egui::Context, ui: &mut Ui) {
         ui.heading("SciGui 📡");
         ui.horizontal(|ui| {
                 if ui.button("Load Data").clicked() {
-                    // TODO: spawn new dialog, when data failed to load
                     loop{
                     if let Some(file) = rfd::FileDialog::new()
                         .add_filter("text-file", &["txt"])
                         .add_filter("CSV-file", &["csv", "CSV"])
                         .set_directory(".")
                         .pick_file(){
-                            // self.plot_data = load_file_to_array(&self.delimiter, &file)
-                            //     .unwrap_or(DEFAULT_DATA.to_vec());
-                            // break;
                             match load_file_to_array(&self.delimiter, &file){
                                 Ok(data) =>{
                                     self.plot_data= data;
@@ -90,6 +96,7 @@ impl MyApp {
                         }
                     }
                 }
+
                 // display load success
                 if self.did_load_succeed {
                     ui.label("✅").on_hover_text("Shows, that the Data has been loaded sucessfully.");
@@ -119,6 +126,15 @@ impl MyApp {
         if ui.button("Save Plot").clicked() {
             ctx.send_viewport_cmd(egui::ViewportCommand::Screenshot);
         }
+
+        // Dropdown menu for modules
+        egui::ComboBox::from_label("Select Module")
+            .selected_text(format!("{:?}", self.selected_module))
+            .show_ui(ui, |ui| {
+                ui.selectable_value(&mut self.selected_module, ModuleEnum::First, "First");
+                ui.selectable_value(&mut self.selected_module, ModuleEnum::Second, "Second");
+                ui.selectable_value(&mut self.selected_module, ModuleEnum::Third, "Third");
+            });
     }
     // Return position of the plot
     fn display_center_panel(&mut self, _ctx: &egui::Context, ui: &mut Ui) -> Option<Rect> {

@@ -10,7 +10,7 @@
   - [ ] run Python script on file -> create custom modules
 
 * WIP Features
-  - [ ] Manipulate X,Y position in plot
-    - [ ] DragValue for X,Y coord. of position rec
 
 * done Features
+  - [X] Manipulate X,Y position in plot
+    - [X] DragValue for X,Y coord. of position rec
