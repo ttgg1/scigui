@@ -10,6 +10,10 @@
   - [ ] run Python script on file -> create custom modules
 
 * WIP Features
+  - [ ] Module selection ComboBox
+    - [ ] show text on the Left
+    - [ ] procedurally add modules with text -> Enum of all modules
+    - [ ] add vertical divider/padding
 
 * done Features
   - [X] Manipulate X,Y position in plot
