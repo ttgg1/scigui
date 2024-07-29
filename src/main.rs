@@ -1,3 +1,5 @@
+pub mod modules;
+
 use eframe::egui::*;
 use egui_plot::{Legend, Line, Plot, PlotPoint, PlotPoints};
 use std::sync::Arc;
@@ -210,7 +212,7 @@ impl eframe::App for MyApp {
         });
 
         if let (Some(screenshot), Some(plot_location)) = (screenshot, plot_rect) {
-            self.handle_screenshot(&ctx, &screenshot, &plot_location);
+            self.handle_screenshot(ctx, &screenshot, &plot_location);
         }
     }
 }
